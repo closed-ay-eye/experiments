@@ -3,15 +3,19 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_core.embeddings import Embeddings
 from sklearn.metrics.pairwise import cosine_similarity
 
+
 def compute_cosine_similarity(embedding1, embedding2):
     embedding1 = embedding1.reshape(1, -1)
     embedding2 = embedding2.reshape(1, -1)
     similarity = cosine_similarity(embedding1, embedding2)
     return similarity[0][0]
+
+
 class EmbeddedCalculator:
     """
      A class to compute the embeddings for a list of unordered strings
     """
+
     def __init__(self, embedder: Embeddings):
         self.embedder = embedder
 
@@ -34,7 +38,7 @@ if __name__ == "__main__":
     c = ec.for_list(["basil", "cheese"])
     d = ec.for_list(["basil"])
     e = ec.for_list(["kotlin", "swift", "java"])
-    print(compute_cosine_similarity(a,b))
-    print(compute_cosine_similarity(a,c))
-    print(compute_cosine_similarity(a,d))
-    print(compute_cosine_similarity(a,e))
+    print(compute_cosine_similarity(a, b))
+    print(compute_cosine_similarity(a, c))
+    print(compute_cosine_similarity(a, d))
+    print(compute_cosine_similarity(a, e))
