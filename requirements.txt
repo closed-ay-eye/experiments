@@ -2,3 +2,6 @@ openai
 faiss-cpu
 pandas
 langchain
+langchain-openai
+urllib3==1.26.6
+scikit-learn~=1.5.0
