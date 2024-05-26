@@ -20,6 +20,7 @@ class EmbeddedCalculator:
         self.embedder = embedder
 
     def __embedding_for_single_string(self, item: str) -> list[float]:
+        print(f"Embedding for [{item}]")
         return self.embedder.embed_query(item)
 
     def __average_embeddings(self, embeddings):
