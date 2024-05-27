@@ -1,4 +1,5 @@
 import logging
+import os
 
 import faiss
 import numpy as np
@@ -9,9 +10,11 @@ from langchain_core.embeddings import Embeddings
 from langchain_openai import OpenAIEmbeddings
 from pandas import DataFrame
 from pandas.core.series import Series
+from openai import OpenAI
 
 from embedding import EmbeddedCalculator
-from compose import RecipePromptComposer
+from rag import RecipePromptComposer, OpenAiQuery
+from utils import pretty_print_recipe
 
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
@@ -77,8 +80,12 @@ if __name__ == "__main__":
     cached_embedder = create_cached_embedder()
     ec = EmbeddedCalculator(cached_embedder)
     index = IndexSearch(ec, "indexes/ingredient_index_3600", df)
-    results = index.search(['turkey'])
+    results = index.search(['sausage', 'potato'])
 
     composer = RecipePromptComposer()
-    print(composer.user_prompt_for_recipes(results, "Good food for kids"))
+    client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+    query = OpenAiQuery(client, composer)
+    response = query.do_rag_query(results, "Good for who is on a diet.")
+    recipe = df.iloc[response['recipe']]
+    pretty_print_recipe(recipe, response['rationale'])
 
