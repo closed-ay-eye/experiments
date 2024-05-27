@@ -68,24 +68,25 @@ class IndexSearch:
 
 def create_cached_embedder() -> Embeddings:
     embedding = OpenAIEmbeddings()
+    store = LocalFileStore("./cache/")
     return CacheBackedEmbeddings.from_bytes_store(
         embedding, store, namespace=embedding.model
     )
 
 
 if __name__ == "__main__":
-    logging.info("Reading panda")
+    logging.info("Reading CSV")
     df = pd.read_csv("dataset/recipes_w_search_terms_3600.csv")
-    store = LocalFileStore("./cache/")
+
     cached_embedder = create_cached_embedder()
     ec = EmbeddedCalculator(cached_embedder)
     index = IndexSearch(ec, "indexes/ingredient_index_3600", df)
-    results = index.search(['sausage', 'potato'])
+    results = index.search(['salmon'])
 
     composer = RecipePromptComposer()
     client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
     query = OpenAiQuery(client, composer)
-    response = query.do_rag_query(results, "Good for who is on a diet.")
+    response = query.do_rag_query(results, "Delicious")
     recipe = df.iloc[response['recipe']]
     pretty_print_recipe(recipe, response['rationale'])
 
