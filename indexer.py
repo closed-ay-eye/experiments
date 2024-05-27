@@ -1,13 +1,17 @@
+import logging
+
+import faiss
+import numpy as np
 import pandas as pd
+from langchain.embeddings import CacheBackedEmbeddings
+from langchain.storage import LocalFileStore
+from langchain_core.embeddings import Embeddings
 from langchain_openai import OpenAIEmbeddings
 from pandas import DataFrame
-from embedding import EmbeddedCalculator
-import numpy as np
-import faiss
-from langchain.storage import LocalFileStore
-from langchain.embeddings import CacheBackedEmbeddings
-import logging
 from pandas.core.series import Series
+
+from embedding import EmbeddedCalculator
+from compose import RecipePromptComposer
 
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
@@ -59,16 +63,22 @@ class IndexSearch:
         return self.__df.iloc[I[0]]
 
 
+def create_cached_embedder() -> Embeddings:
+    embedding = OpenAIEmbeddings()
+    return CacheBackedEmbeddings.from_bytes_store(
+        embedding, store, namespace=embedding.model
+    )
+
+
 if __name__ == "__main__":
     logging.info("Reading panda")
     df = pd.read_csv("dataset/recipes_w_search_terms_3600.csv")
     store = LocalFileStore("./cache/")
-    embedding = OpenAIEmbeddings()
-    cached_embedder = CacheBackedEmbeddings.from_bytes_store(
-        embedding, store, namespace=embedding.model
-    )
+    cached_embedder = create_cached_embedder()
     ec = EmbeddedCalculator(cached_embedder)
     index = IndexSearch(ec, "indexes/ingredient_index_3600", df)
     results = index.search(['turkey'])
 
-    print(results.index)
+    composer = RecipePromptComposer()
+    print(composer.user_prompt_for_recipes(results, "Good food for kids"))
+
