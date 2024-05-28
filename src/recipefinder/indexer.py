@@ -76,11 +76,11 @@ def create_cached_embedder() -> Embeddings:
 
 if __name__ == "__main__":
     logging.info("Reading CSV")
-    df = pd.read_csv("dataset/recipes_w_search_terms_3600.csv")
+    df = pd.read_csv("../../dataset/recipes_w_search_terms_3600.csv")
 
     cached_embedder = create_cached_embedder()
     ec = EmbeddedCalculator(cached_embedder)
-    index = IndexSearch(ec, "indexes/ingredient_index_3600", df)
+    index = IndexSearch(ec, "../../indexes/ingredient_index_3600", df)
     results = index.search(['salmon'])
 
     composer = RecipePromptComposer()
