@@ -73,6 +73,7 @@ class OpenAiQuery:
 
 
 class RecipeResult(BaseModel):
+    """Represents the result of """
     recipe: Optional[int] = Field(description="recipe's ID")
     rationale: str = Field(description="rationale for choosing the recipe")
 
