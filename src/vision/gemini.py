@@ -17,6 +17,6 @@ class Gemini:
 if __name__ == "__main__":
     api_key = os.getenv('GOOGLE_API_KEY')
     gemini = Gemini(api_key)
-    image = PIL.Image.open('./images/shrimp-tofu.webp')
+    image = PIL.Image.open('../../images/shrimp-tofu.webp')
     detection = gemini.detect_ingredients(image)
     print(f"Ingredients detected:{detection.text}")
