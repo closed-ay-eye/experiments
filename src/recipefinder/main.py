@@ -4,7 +4,7 @@ import pandas as pd
 import os
 from indexer import create_cached_embedder, IndexSearch
 from embedding import EmbeddedCalculator
-from rag import RecipePromptComposer, OpenAiQuery
+from rag import RecipePromptComposer, OpenAiQuery, LangChainQuery
 from openai import OpenAI
 from utils import pretty_print_recipe
 
@@ -31,9 +31,16 @@ if __name__ == "__main__":
         user_prompt = "I don't have a preference for the recipe, pick any."
     search_results = index.search(ingredients)
     composer = RecipePromptComposer()
-    client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-    query = OpenAiQuery(client, composer)
+    query = LangChainQuery(composer)
     response = query.do_rag_query(search_results, user_prompt)
-    recipe = df.iloc[response['recipe']]
-    print("Here's your recipe: \n\n")
-    pretty_print_recipe(recipe, response['rationale'])
+    if response.recipe is not None:
+        recipe = df.iloc[response.recipe]
+        pretty_print_recipe(recipe, response.rationale)
+    else:
+        print(f"Sorry, we could not find a recipe. {response.rationale}")
+    # client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+    # query = OpenAiQuery(client, composer)
+    # response = query.do_rag_query(search_results, user_prompt)
+    # recipe = df.iloc[response['recipe']]
+    # print("Here's your recipe: \n\n")
+    # pretty_print_recipe(recipe, response['rationale'])
