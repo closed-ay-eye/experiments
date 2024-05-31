@@ -1,2 +1,6 @@
 .idea/**
 .env
+*.PNG
+*.JPEG
+*.WEBP
+*__pycache__*

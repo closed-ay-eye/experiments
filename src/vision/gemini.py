@@ -1,22 +1,35 @@
-import google.generativeai as genai
-import os
-import PIL.Image
+from langchain_core.messages import HumanMessage
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 
 class Gemini:
-    def __init__(self, google_api_key):
-        genai.configure(api_key=google_api_key)
-        self.model = genai.GenerativeModel('gemini-pro-vision')
+    def __init__(self):
+        self.model = ChatGoogleGenerativeAI(model='gemini-pro-vision')
 
-    def detect_ingredients(self, ingredients_picture):
+    def detect_ingredients(self, ingredients_picture_path):
         prompt = """This image contains ingredients for a food recipe. I would like you to identify all the ingredients
-        in this image and return their names as a comma separated list."""
-        return self.model.generate_content([prompt, ingredients_picture])
+        in this image and return their names in a MARKDOWN format. If there are no ingredients in the picture, I would
+        like you to return an empty MARKDOWN."""
+
+        message = HumanMessage(
+            content=[
+                {
+                    "type": "text",
+                    "text": prompt,
+                },
+                {
+                    "type": "image_url",
+                    "image_url": ingredients_picture_path,
+                },
+            ]
+        )
+
+        return self.model.invoke([message])
 
 
 if __name__ == "__main__":
-    api_key = os.getenv('GOOGLE_API_KEY')
-    gemini = Gemini(api_key)
-    image = PIL.Image.open('../../images/shrimp-tofu.webp')
-    detection = gemini.detect_ingredients(image)
-    print(f"Ingredients detected:{detection.text}")
+    gemini = Gemini()
+    image_path = 'images/shrimp-tofu.webp'
+
+    detection = gemini.detect_ingredients(image_path)
+    print(f"Ingredients detected:{detection.content}")
