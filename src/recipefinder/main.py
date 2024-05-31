@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
 
 import pandas as pd
-import os
-from indexer import create_cached_embedder, IndexSearch
+
 from embedding import EmbeddedCalculator
-from rag import RecipePromptComposer, OpenAiQuery, LangChainQuery
-from openai import OpenAI
+from indexer import create_cached_embedder, IndexSearch
+from rag import RecipePromptComposer, LangChainQuery
 from utils import pretty_print_recipe
 
 if __name__ == "__main__":
     # Loading
-    df = pd.read_csv("dataset/recipes_w_search_terms_3600.csv")
+    df = pd.read_csv("dataset/recipes_w_search_terms.csv")
     cached_embedder = create_cached_embedder()
     ec = EmbeddedCalculator(cached_embedder)
-    index = IndexSearch(ec, "indexes/ingredient_index_3600", df)
+    index = IndexSearch(ec, "indexes/ingredient_index_7200", df)
 
     print("Hi ! I am test python script to test the recipe suggestion engine.")
     ingredients = []

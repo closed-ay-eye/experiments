@@ -88,7 +88,7 @@ class LangChainQuery:
             ("human", "{user_prompt}")
         ])
         self.__parser = PydanticOutputParser(pydantic_object=RecipeResult)
-        self.__chain = self.__prompt | self.chat | self.__parser
+        self.__chain = (self.__prompt | self.chat | self.__parser).with_config({"run_name": "Ingredient Recipe RAG"})
 
     def do_rag_query(self, recipes: Series, user_input: str) -> RecipeResult:
         user_prompt = self.__composer.user_prompt_for_recipes(recipes, user_input, self.__parser.get_format_instructions())
