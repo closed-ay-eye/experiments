@@ -12,7 +12,7 @@ if __name__ == "__main__":
     df = pd.read_csv("dataset/recipes_w_search_terms.csv")
     cached_embedder = create_cached_embedder()
     ec = EmbeddedCalculator(cached_embedder)
-    index = IndexSearch(ec, "indexes/ingredient_index_7200", df)
+    index = IndexSearch(ec, "indexes/ingredient_index_14400", df)
 
     print("Hi ! I am test python script to test the recipe suggestion engine.")
     ingredients = []

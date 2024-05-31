@@ -73,11 +73,10 @@ def create_cached_embedder() -> Embeddings:
         embedding, store, namespace=embedding.model
     )
 
+
 def merge_faiss_indexes(first_path: str, second_path: str, result_path: str):
     index_1 = faiss.read_index(first_path)
     index_2 = faiss.read_index(second_path)
     index_1.merge_from(index_2)
     faiss.write_index(index_1, result_path)
-
-
 
