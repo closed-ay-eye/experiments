@@ -1,20 +1,15 @@
 import logging
-import os
 
 import faiss
 import numpy as np
-import pandas as pd
 from langchain.embeddings import CacheBackedEmbeddings
 from langchain.storage import LocalFileStore
 from langchain_core.embeddings import Embeddings
 from langchain_openai import OpenAIEmbeddings
 from pandas import DataFrame
 from pandas.core.series import Series
-from openai import OpenAI
 
-from embedding import EmbeddedCalculator
-from rag import RecipePromptComposer, OpenAiQuery
-from utils import pretty_print_recipe
+from src.recipefinder.embedding import EmbeddedCalculator
 
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
@@ -28,7 +23,7 @@ class IngredientsIndexer:
     def index(self):
         logging.info("Starting indexing")
         logging.info("Splitting ingredients list")
-        logging.info(f"Indexing {len(df.index)} recipes")
+        logging.info(f"Indexing {len(self.__df.index)} recipes")
         self.__df['ingredients'] = self.__df['ingredients'].apply(lambda x: x.strip("[]").replace("'", "").split(', '))
 
         def embedding_with_progress(items: [str]):
