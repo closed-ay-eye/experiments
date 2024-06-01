@@ -52,6 +52,7 @@ class Gemini:
         return (self.__model | self.__parser).with_config({"run_name": "Gemini Vision Ingredient"}).invoke([message])
 
 
+
 if __name__ == "__main__":
     gemini = Gemini()
     image_folder = "../../images"

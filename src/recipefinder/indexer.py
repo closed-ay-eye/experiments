@@ -74,19 +74,9 @@ def create_cached_embedder() -> Embeddings:
     )
 
 
-if __name__ == "__main__":
-    logging.info("Reading CSV")
-    df = pd.read_csv("../../dataset/recipes_w_search_terms_3600.csv")
-
-    cached_embedder = create_cached_embedder()
-    ec = EmbeddedCalculator(cached_embedder)
-    index = IndexSearch(ec, "../../indexes/ingredient_index_3600", df)
-    results = index.search(['salmon'])
-
-    composer = RecipePromptComposer()
-    client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-    query = OpenAiQuery(client, composer)
-    response = query.do_rag_query(results, "Delicious")
-    recipe = df.iloc[response['recipe']]
-    pretty_print_recipe(recipe, response['rationale'])
+def merge_faiss_indexes(first_path: str, second_path: str, result_path: str):
+    index_1 = faiss.read_index(first_path)
+    index_2 = faiss.read_index(second_path)
+    index_1.merge_from(index_2)
+    faiss.write_index(index_1, result_path)
 
