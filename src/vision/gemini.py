@@ -30,7 +30,7 @@ class Gemini:
         self.__model = ChatGoogleGenerativeAI(model='gemini-pro-vision')
         self.__parser = PydanticOutputParser(pydantic_object=IngredientList)
 
-    def detect_ingredients(self, ingredients_picture_path):
+    def detect_ingredients(self, ingredients_picture_path) -> IngredientList:
         image_base64_url_encoded = image_to_base64_url(ingredients_picture_path)
         prompt = f"""This image contains ingredients for a food recipe. I would like you to identify all the ingredients
         in this image and return their names in as list. If no ingredient is found in the image return an empty 
@@ -50,7 +50,6 @@ class Gemini:
         )
 
         return (self.__model | self.__parser).with_config({"run_name": "Gemini Vision Ingredient"}).invoke([message])
-
 
 
 if __name__ == "__main__":
