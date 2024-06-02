@@ -1,19 +1,23 @@
-from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_openai import ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.pydantic_v1 import BaseModel, Field
+from textwrap import dedent
 from typing import List
-from langchain.output_parsers import PydanticOutputParser
-from pandas.core.series import Series
-import pandas as pd
-from langchain_community.utilities.dalle_image_generator import DallEAPIWrapper
-from crewai import Agent, Task, Crew, Process
 
+import pandas as pd
+from crewai import Agent, Task, Crew, Process
+from langchain_community.utilities.dalle_image_generator import DallEAPIWrapper
+from pydantic import BaseModel, Field
 from langchain_core.tools import Tool
+from pandas.core.series import Series
 
 
 class ImageGenResult(BaseModel):
     image_urls: List[str] = Field(default=[], description="The full URL for the image that illustrates the recipe step")
+
+
+def _format_recipe(recipe: Series) -> str:
+    name = recipe['name']
+    ingredients = "\n".join((map(lambda x: f"- {x.replace("  ", "")}", eval(recipe['ingredients_raw_str']))))
+    steps = "\n".join((map(lambda x: f"- {x}", eval(recipe['steps']))))
+    return dedent(f"""Name: {name}\nIngredients:\n{ingredients}\n\nSteps:\n{steps}\n""")
 
 
 class Illustrator:
@@ -35,25 +39,26 @@ class Illustrator:
             memory=True
         )
 
-
-    def format_recipe(self, recipe: Series) -> str:
-        name = recipe['name']
-        ingredients = "\n".join((map(lambda x: f"- {x}", eval(recipe['ingredients_raw_str']))))
-        steps = "\n".join((map(lambda x: f"- {x}",eval(recipe['steps']))))
-        return f"""Name: {name}
-        Ingredients:
-        {ingredients}
-        
-        Step:
-        {steps}
-           
-        """
-
-
-
+    def create_illustration(self, recipe: Series) -> ImageGenResult:
+        recipe = _format_recipe(recipe)
+        task = Task(
+            description=f"Given the recipe below, create a photo-realistic illustration for each step of the recipe. "
+                        f"Please keep the full URL for images as they were provided by the tool\n\n{recipe}",
+            agent=self.__agent,
+            expected_output="A list of URLs for the generated illustrations.Please keep the entire url for the "
+                            "images, do not short them",
+            output_pydantic=ImageGenResult
+        )
+        crew = Crew(
+            agents=[self.__agent],
+            tasks=[task],
+            process=Process.sequential,
+            verbose=True,
+        )
+        return crew.kickoff()
 
 
 if __name__ == "__main__":
     df = pd.read_csv("../../dataset/recipes_w_search_terms.csv")
     a = Illustrator()
-    print(a.format_recipe(df.iloc[0]))
+    print(a.create_illustration(df.iloc[0]))
