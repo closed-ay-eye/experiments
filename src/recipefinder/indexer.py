@@ -3,18 +3,14 @@ import os
 
 import faiss
 import numpy as np
-import pandas as pd
 from langchain.embeddings import CacheBackedEmbeddings
 from langchain.storage import LocalFileStore
 from langchain_core.embeddings import Embeddings
 from langchain_openai import OpenAIEmbeddings
 from pandas import DataFrame
 from pandas.core.series import Series
-from openai import OpenAI
 
 from embedding import EmbeddedCalculator
-from rag import RecipePromptComposer, OpenAiQuery
-from utils import pretty_print_recipe
 
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 

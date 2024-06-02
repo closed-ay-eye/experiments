@@ -9,3 +9,5 @@ numpy~=1.26.4
 langchain-google-genai
 pillow
 streamlit
+crewai
+

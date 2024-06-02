@@ -44,34 +44,6 @@ class RecipePromptComposer:
         """
 
 
-class OpenAiQuery:
-
-    def __init__(self, openai_client: OpenAI, composer: RecipePromptComposer, model: str = "gpt-4o",
-                 temperature: float = 0.5):
-        self.__model = model
-        self.__composer = composer
-        self.__temperature = temperature
-        self.__client = openai_client
-
-    def do_rag_query(self, recipes: Series, user_input: str):
-        user_prompt = self.__composer.user_prompt_for_recipes(recipes, user_input)
-        response = self.__client.chat.completions.create(
-            model=self.__model,
-            messages=[
-                {"role": "system", "content": self.__composer.system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            response_format={"type": "json_object"}
-        )
-        response_json = {}
-        try:
-            response_json = json.loads(response.choices[0].message.content.strip())
-        except json.JSONDecodeError as e:
-            logging.error("Failed to decode OpenAI response")
-
-        return response_json
-
-
 class RecipeResult(BaseModel):
     """Represents the result of """
     recipe: Optional[int] = Field(description="recipe's ID")
