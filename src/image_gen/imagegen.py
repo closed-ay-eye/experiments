@@ -7,6 +7,7 @@ from langchain_community.utilities.dalle_image_generator import DallEAPIWrapper
 from pydantic import BaseModel, Field
 from langchain_core.tools import Tool
 from pandas.core.series import Series
+from langchain_openai import ChatOpenAI
 
 
 class ImageGenResult(BaseModel):
@@ -32,6 +33,7 @@ class Illustrator:
         self.__agent = Agent(
             role="Illustrator",
             goal="Create a photo-realistic illustration for each the recipe's steps",
+            llm=ChatOpenAI(model="gpt-4o", temperature=0),
             backstory=(
                 """ You are a really capable artist that can draw very photo-realistic illustration for each step of a recipe."""),
             tools=[self.__dalle],
