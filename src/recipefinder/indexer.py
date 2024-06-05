@@ -1,5 +1,4 @@
 import logging
-import os
 
 import faiss
 import numpy as np
@@ -11,6 +10,7 @@ from pandas import DataFrame
 from pandas.core.series import Series
 
 from embedding import EmbeddedCalculator
+
 
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
@@ -24,7 +24,7 @@ class IngredientsIndexer:
     def index(self):
         logging.info("Starting indexing")
         logging.info("Splitting ingredients list")
-        logging.info(f"Indexing {len(df.index)} recipes")
+        logging.info(f"Indexing {len(self.__df.index)} recipes")
         self.__df['ingredients'] = self.__df['ingredients'].apply(lambda x: x.strip("[]").replace("'", "").split(', '))
 
         def embedding_with_progress(items: [str]):

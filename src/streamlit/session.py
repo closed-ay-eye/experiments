@@ -2,4 +2,4 @@
 
 
 class SessionKeys:
-    GEMINI_MODEL = "gemini_model"
+    SYSTEM_MODEL = "system_model"

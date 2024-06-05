@@ -15,7 +15,7 @@ Our project involves developing an app that identifies ingredients from photos a
 
 - **Image Recognition:** Gemini Pro Vision
 - **Data Storage and Retrieval:** FAISS, LangChain
-- **Recipe Dataset:** Kaggle Food Ingredients and Recipe Dataset (https://www.kaggle.com/datasets/pes12017000148/food-ingredients-and-recipe-dataset-with-images)
+- **Recipe Dataset:** [Food.com Recipes with Search Terms and Tags](https://www.kaggle.com/datasets/shuyangli94/foodcom-recipes-with-search-terms-and-tags)
 - **Illustration Generation:** DALL-E 3 in ChatGPT
 - **Text-to-Speech:** [Text-to-speech model]
 
