@@ -13,4 +13,4 @@ crewai[tools]~=0.30.11
 pydantic~=2.7.2
 streamlit
 rx
-
+google-cloud-texttospeech
