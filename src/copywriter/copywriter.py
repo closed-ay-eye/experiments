@@ -10,7 +10,8 @@ from typing import List
 
 class RecipeClassScript(BaseModel):
     ingredients: str = Field(description="The whole ingredients list as said by culinary teacher")
-    steps: List[str] = Field(description="Each os the step as said by the culinary teacher")
+    steps: List[str] = Field(description="Each of the steps as said by the culinary teacher")
+    steps_illustration: List[str] = Field(description="For each steo this is an image description which would be suitable to create a photo-realistic ilustration using DALL·E 3")
 
 
 class Copywriter:
@@ -32,9 +33,12 @@ class Copywriter:
 
     def create_script(self, recipe: Series) -> RecipeClassScript:
         formatted_recipe = self._format_recipe(recipe)
-        user_prompt = (f"You are a famous and very didactic culinary teacher. Rewrite the ingredients list for the "
+        user_prompt = (f"You are a famous, charming, and very didactic culinary teacher. Rewrite the ingredients list for the "
                        f"recipe below as if you teaching the recipe to your dear apprentice. Do the same thing for "
-                       f"each step of the recipe. Here is the recipe you will teach:\n\n{formatted_recipe}\n\n"
+                       f"each step of the recipe. Also for each step create an image description that could be to "
+                       f"create a photo-realistic illustration of the step using DALL·E 3. If a step is composed of "
+                       f"several instructions, choose only the main one to create the image description. Here"
+                       f"is the recipe you will teach:\n\n{formatted_recipe}\n\n"
                        f"{self.__parser.get_format_instructions()}")
         return self.__chain.invoke({"user_prompt": user_prompt})
 
@@ -42,4 +46,4 @@ class Copywriter:
 if __name__ == "__main__":
     df = pd.read_csv("../../dataset/recipes_w_search_terms.csv")
     cw = Copywriter()
-    print(cw.create_script(df.iloc[0]))
+    print(cw.create_script(df.iloc[6]))
