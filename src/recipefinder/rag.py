@@ -1,14 +1,14 @@
-import logging
 import json
+import logging
+from typing import Optional
 
-from pandas.core.series import Series
-from openai import OpenAI
+from langchain.output_parsers import PydanticOutputParser
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.pydantic_v1 import BaseModel, Field
-from langchain.output_parsers import PydanticOutputParser
-from typing import Optional
+from langchain_openai import ChatOpenAI
+from openai import OpenAI
+from pandas.core.series import Series
 
 
 class RecipePromptComposer:
