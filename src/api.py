@@ -53,14 +53,14 @@ def find_recipe(request: IngredientRequest):
         if chosen_recipe.recipe is not None:
             recipe_dataframe = df.iloc[chosen_recipe.recipe]
             script = Copywriter().create_script(recipe_dataframe)
-            image = retrieve_recipe_photo(recipe_dataframe['id'])
+            image = retrieve_recipe_photo(str(recipe_dataframe['id']))
             return RecipeRequestResult(recipe=RecipeResult(
                 name=recipe_dataframe['name'],
                 image=image,
                 description=recipe_dataframe['description'],
                 ingredients=eval(recipe_dataframe['ingredients_raw_str']),
-                # steps=eval(recipe_dataframe['steps']),
-                # servings=recipe_dataframe['servings'],
+                steps=eval(recipe_dataframe['steps']),
+                servings=recipe_dataframe['servings'],
                 serving_size=recipe_dataframe['serving_size'],
                 script=script
             ))
