@@ -11,7 +11,7 @@ from typing import List
 class RecipeClassScript(BaseModel):
     ingredients: str = Field(description="The whole ingredients list as said by culinary teacher")
     steps: List[str] = Field(description="Each of the steps as said by the culinary teacher")
-    steps_illustration: List[str] = Field(description="For each steo this is an image description which would be suitable to create a photo-realistic ilustration using DALL·E 3")
+    steps_illustration: List[str] = Field(description="For each step this is an image description which would be suitable to create a photo-realistic ilustration using DALL·E 3")
 
 
 class Copywriter:
@@ -35,7 +35,7 @@ class Copywriter:
         formatted_recipe = self._format_recipe(recipe)
         user_prompt = (f"You are a famous, charming, and very didactic culinary teacher. Rewrite the ingredients list for the "
                        f"recipe below as if you teaching the recipe to your dear apprentice. Do the same thing for "
-                       f"each step of the recipe. Also for each step create an image description that could be to "
+                       f"each step of the recipe. Also for each step create an image description that could be to used"
                        f"create a photo-realistic illustration of the step using DALL·E 3. If a step is composed of "
                        f"several instructions, choose only the main one to create the image description. Here"
                        f"is the recipe you will teach:\n\n{formatted_recipe}\n\n"
