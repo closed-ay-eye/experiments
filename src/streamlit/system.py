@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import pandas as pd
 from PIL import Image
-from rx.subject import ReplaySubject
+from rx.subject import BehaviorSubject
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 from src.photo_scrapper import retrieve_recipe_photo
@@ -17,6 +17,8 @@ from src.vision.gemini import Gemini
 class RecipeResponse:
     answer: str = ""
     recipe_id: int = -1
+    recipe_name: str = ""
+    recipe_steps: list[str] = ()
 
 
 class SystemModel:
@@ -33,10 +35,7 @@ class SystemModel:
         self.composer = RecipePromptComposer()
         self.query = LangChainQuery(self.composer)
         self.gemini = Gemini()
-        self.subject = ReplaySubject(buffer_size=1)
-        self.subject.on_next(
-            WaitingInputState()
-        )
+        self.subject = BehaviorSubject(WaitingInputState())
 
     def observe_events(self):
         return self.subject
@@ -53,6 +52,8 @@ class SystemModel:
             return RecipeResponse(
                 answer=f"{recipe}\n {response.rationale}",
                 recipe_id=recipe['id'],
+                recipe_name=recipe['name'],
+                recipe_steps=eval(recipe['steps']),
             )
         else:
             return RecipeResponse(
@@ -84,14 +85,21 @@ class SystemModel:
                 self.subject.on_next(
                     DisplayState(
                         uploaded_image=image,
+                        recipe_name="",
+                        recipe_steps="",
                         recipe_text="No Ingredients Found!",
                     )
                 )
             else:
                 response = self.search_by_ingredient(ingredients=content.ingredients, user_prompt=user_prompt)
+                steps_mk = ""
+                for step in response.recipe_steps:
+                    steps_mk += f"- {step}\n"
                 self.subject.on_next(
                     DisplayState(
                         uploaded_image=image,
+                        recipe_name=response.recipe_name,
+                        recipe_steps=steps_mk,
                         recipe_text=response.answer,
                         recipe_image_url=retrieve_recipe_photo(str(response.recipe_id))
                     )

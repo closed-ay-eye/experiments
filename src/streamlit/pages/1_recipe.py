@@ -31,42 +31,42 @@ def handle_state(state):
 
 def display_processing(state: ProcessingState):
     with answer_holder.container():
-        col1, col2 = st.columns(2)
-        with col1:
-            st.image(
-                state.uploaded_image,
-                caption="You just uploaded an image!",
-            )
-
-        with col2:
-            st.markdown(state.loading_message)
+        st.image(
+            state.uploaded_image,
+            caption="You just uploaded an image!",
+        )
+        st.markdown(state.loading_message)
 
 
 def display_answer(state: DisplayState):
     with answer_holder.container():
-        col1, col2 = st.columns(2)
-        with col1:
-            st.image(
-                state.uploaded_image,
-                caption="You just uploaded an image!",
-            )
-
-        with col2:
-            st.markdown(state.recipe_text)
-            if state.recipe_image_url:
-                st.image(state.recipe_image_url)
-            if st.button('Restart'):
-                model.on_return_to_start()
-                st.rerun()
+        st.title(state.recipe_name)
+        if state.recipe_image_url:
+            st.image(state.recipe_image_url)
+        elif state.uploaded_image:
+            st.image(state.uploaded_image)
+        st.markdown(state.recipe_steps)
+        st.markdown(state.recipe_text)
+        if st.button('Restart'):
+            model.on_return_to_start()
 
 
 def display_waiting_input():
     with input_holder.container():
-        img_file_buffer = st.camera_input(label="Take an ingredients picture")
-        img_upload_buffer = st.file_uploader(label="Or upload an image")
-        user_prompt = st.text_area(label="Based on the ingredients from the picture tell me what you want for your recipe")
+        # Create a form
+        with st.form(key='my_form'):
+            img_file_buffer = st.camera_input(label="Take an ingredients picture")
+            img_upload_buffer = st.file_uploader(label="Or upload an image")
+            user_prompt = st.text_area(
+                label="Based on the ingredients from the picture tell me what you want for your recipe"
+            )
 
-        model.on_image_inserted(img_file_buffer, img_upload_buffer, user_prompt)
+            # Add a submit button
+            submit_button = st.form_submit_button(label='Submit')
+
+        # Check if the form was submitted
+        if submit_button:
+            model.on_image_inserted(img_file_buffer, img_upload_buffer, user_prompt)
 
 
 def observe_model():
