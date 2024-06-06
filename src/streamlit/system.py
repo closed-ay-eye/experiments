@@ -2,20 +2,21 @@ from dataclasses import dataclass
 
 import pandas as pd
 from PIL import Image
-from rx.subject import Subject
+from rx.subject import ReplaySubject
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
+from src.photo_scrapper import retrieve_recipe_photo
 from src.recipefinder.embedding import EmbeddedCalculator
 from src.recipefinder.indexer import create_cached_embedder, IndexSearch
 from src.recipefinder.rag import RecipePromptComposer, LangChainQuery
+from src.streamlit.state import DisplayState, WaitingInputState, ProcessingState
 from src.vision.gemini import Gemini
 
 
 @dataclass
-class DisplayState:
-    image: Image
-    recipe_text: str = ""
-    loading_message: str = ""
+class RecipeResponse:
+    answer: str = ""
+    recipe_id: int = -1
 
 
 class SystemModel:
@@ -32,7 +33,10 @@ class SystemModel:
         self.composer = RecipePromptComposer()
         self.query = LangChainQuery(self.composer)
         self.gemini = Gemini()
-        self.subject = Subject()
+        self.subject = ReplaySubject(buffer_size=1)
+        self.subject.on_next(
+            WaitingInputState()
+        )
 
     def observe_events(self):
         return self.subject
@@ -46,11 +50,16 @@ class SystemModel:
         response = self.query.do_rag_query(search_results, user_prompt)
         if response.recipe is not None:
             recipe = self.df.iloc[response.recipe]
-            return f"{recipe}\n {response.rationale}"
+            return RecipeResponse(
+                answer=f"{recipe}\n {response.rationale}",
+                recipe_id=recipe['id'],
+            )
         else:
-            return f"Sorry, we could not find a recipe. {response.rationale}"
+            return RecipeResponse(
+                answer=f"Sorry, we could not find a recipe. {response.rationale}",
+            )
 
-    def on_user_input(self, camera_image: UploadedFile, uploaded_image: UploadedFile, user_prompt: str):
+    def on_image_inserted(self, camera_image: UploadedFile, uploaded_image: UploadedFile, user_prompt: str):
         image = None
 
         if camera_image is not None:
@@ -64,18 +73,31 @@ class SystemModel:
             image.save(tmp_img_path)
 
             self.subject.on_next(
-                DisplayState(
-                    image=image,
+                ProcessingState(
+                    uploaded_image=image,
                     loading_message="LOAding..."
                 )
             )
 
             content = self.detect_ingredients(tmp_img_path)
-            response = self.search_by_ingredient(content.ingredients)
-
-            self.subject.on_next(
-                DisplayState(
-                    image=image,
-                    recipe_text=response
+            if len(content.ingredients) == 0:
+                self.subject.on_next(
+                    DisplayState(
+                        uploaded_image=image,
+                        recipe_text="No Ingredients Found!",
+                    )
                 )
-            )
+            else:
+                response = self.search_by_ingredient(ingredients=content.ingredients, user_prompt=user_prompt)
+                self.subject.on_next(
+                    DisplayState(
+                        uploaded_image=image,
+                        recipe_text=response.answer,
+                        recipe_image_url=retrieve_recipe_photo(str(response.recipe_id))
+                    )
+                )
+
+    def on_return_to_start(self):
+        self.subject.on_next(
+            WaitingInputState()
+        )
