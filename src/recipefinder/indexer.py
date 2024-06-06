@@ -9,7 +9,7 @@ from langchain_openai import OpenAIEmbeddings
 from pandas import DataFrame
 from pandas.core.series import Series
 
-from src.recipefinder.embedding import EmbeddedCalculator
+from recipefinder.embedding import EmbeddedCalculator
 
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
