@@ -50,10 +50,16 @@ def display_answer(state: DisplayState):
         st.markdown("**Ingredient List:**")
         st.markdown("\n".join(map(lambda x: f'- {x}', state.recipe_ingredients)))
 
+        if state.audio_ingredients is not None:
+            st.audio(state.audio_ingredients, format="audio/mp3")
+
         st.markdown("**Steps:**")
 
-        for step in state.recipe_steps:
+        for i in range(len(state.recipe_steps)):
+            step = state.recipe_steps[i]
             st.markdown(step.recipe_step)
+            if state.steps_audio[i] is not None:
+                st.audio(state.steps_audio[i], format="audio/mp3")
             st.image(step.recipe_image_url, width=256)
 
         if st.button('Restart'):

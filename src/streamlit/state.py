@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Optional,List
 
 from PIL import Image
 
@@ -23,6 +24,8 @@ class DisplayState:
     recipe_steps: list[IllustratedStep]
     recipe_text: str = ""
     recipe_image_url: str = ""
+    audio_ingredients: Optional[bytes] = None
+    steps_audio: List[Optional[bytes]] = field(default_factory=list)
 
 
 @dataclass
