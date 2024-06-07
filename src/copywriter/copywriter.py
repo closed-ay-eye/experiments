@@ -11,7 +11,7 @@ from typing import List
 class RecipeClassScript(BaseModel):
     ingredients: str = Field(description="The whole ingredients list as said by culinary teacher")
     steps: List[str] = Field(description="Each of the steps as said by the culinary teacher")
-    steps_illustration: List[str] = Field(description="For each steo this is an image description which would be suitable to create a photo-realistic ilustration using DALL·E 3")
+    steps_illustration: List[str] = Field(description="For each step this is an image description which would be suitable to create a photo-realistic ilustration using DALL·E 3")
 
 
 class Copywriter:
@@ -27,7 +27,7 @@ class Copywriter:
 
     def _format_recipe(self, recipe: Series) -> str:
         name = recipe['name']
-        ingredients = "\n".join((map(lambda x: f"- {x.replace("  ", "")}", eval(recipe['ingredients_raw_str']))))
+        ingredients = "\n".join((map(lambda x: f"- {x.replace('  ', '')}", eval(recipe['ingredients_raw_str']))))
         steps = "\n".join((map(lambda x: f"- {x}", eval(recipe['steps']))))
         return f"""Name: {name}\nIngredients:\n{ingredients}\n\nSteps:\n{steps}\n"""
 
