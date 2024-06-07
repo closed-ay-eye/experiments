@@ -1,3 +1,7 @@
+import asyncio
+loop = asyncio.new_event_loop()
+asyncio.set_event_loop(loop)
+
 from dataclasses import dataclass
 
 import pandas as pd
@@ -134,6 +138,7 @@ class SystemModel:
                     DisplayState(
                         uploaded_image=image,
                         recipe_name=response.recipe_name,
+                        recipe_ingredients=eval(response.recipe_dataframe['ingredients_raw_str']),
                         recipe_steps=illustrated_steps,
                         recipe_text=response.answer,
                         recipe_image_url=retrieve_recipe_photo(str(response.recipe_id))
