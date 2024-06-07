@@ -31,10 +31,11 @@ class Gemini:
         self.__parser = PydanticOutputParser(pydantic_object=IngredientList)
 
     def detect_ingredients(self, ingredients_picture_path) -> IngredientList:
+        print("start gemini")
         image_base64_url_encoded = image_to_base64_url(ingredients_picture_path)
-        prompt = f"""This image contains ingredients for a food recipe. I would like you to identify all the ingredients
-        in this image and return their names in as list. If no ingredient is found in the image return an empty 
-        list. Ingredients should be in lowercase. Do not mention brand names. {self.__parser.get_format_instructions()}"""
+        prompt = f"""You are an agent that identifies food ingredients in images. Identify all ingredients in the 
+        picture and return the response as a JSON list. If no ingredient is found in the image return an empty list. 
+        Ingredients should be in lowercase. Do not mention brand names. {self.__parser.get_format_instructions()}"""
 
         message = HumanMessage(
             content=[
@@ -48,8 +49,11 @@ class Gemini:
                 },
             ]
         )
-
-        return (self.__model | self.__parser).with_config({"run_name": "Gemini Vision Ingredient"}).invoke([message])
+        try:
+            return (self.__model | self.__parser).with_config({"run_name": "Gemini Vision Ingredient"}).invoke(
+                [message])
+        except:
+            return IngredientList(ingredients=[])
 
 
 if __name__ == "__main__":
