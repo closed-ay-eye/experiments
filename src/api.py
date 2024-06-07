@@ -19,6 +19,7 @@ class IngredientRequest(BaseModel):
 class RecipeResult(BaseModel):
     name: str = Field(description="The name of the recipe")
     image: Optional[str] = Field(default=None, description="The URL for recipe's image")
+    rationale: Optional[str] = Field(default=None, description="Why ChatGPT chose this recipe")
     description: str = Field(description="The name of the recipe")
     ingredients: List[str] = Field(description="The list of ingredients")
     steps: List[str] = Field(description="The list recipe steps")
@@ -28,7 +29,7 @@ class RecipeResult(BaseModel):
 
 
 class ErrorResult(BaseModel):
-    code: int = Field(default=0, description="The error code")
+    code: str = Field(default=0, description="The error code")
     description: str = Field(default="", description="The error description")
 
 
@@ -46,25 +47,29 @@ index = IndexSearch(ec, "indexes/ingredient_index_14400", df)
 
 @app.post("/recipes/find")
 def find_recipe(request: IngredientRequest):
-    if len(request.ingredients) > 0:
-        search_results = index.search(request.ingredients)
-        user_prompt = request.prompt if len(request.prompt.strip()) > 0 else "Pick any"
-        chosen_recipe = LangChainQuery().do_rag_query(search_results, user_prompt)
-        if chosen_recipe.recipe is not None:
-            recipe_dataframe = df.iloc[chosen_recipe.recipe]
-            script = Copywriter().create_script(recipe_dataframe)
-            image = retrieve_recipe_photo(str(recipe_dataframe['id']))
-            return RecipeRequestResult(recipe=RecipeResult(
-                name=recipe_dataframe['name'],
-                image=image,
-                description=recipe_dataframe['description'],
-                ingredients=eval(recipe_dataframe['ingredients_raw_str']),
-                steps=eval(recipe_dataframe['steps']),
-                servings=recipe_dataframe['servings'],
-                serving_size=recipe_dataframe['serving_size'],
-                script=script
-            ))
+    try:
+        if len(request.ingredients) > 0:
+            search_results = index.search(request.ingredients)
+            user_prompt = request.prompt if len(request.prompt.strip()) > 0 else "Pick any"
+            chosen_recipe = LangChainQuery().do_rag_query(search_results, user_prompt)
+            if chosen_recipe.recipe is not None:
+                recipe_dataframe = df.iloc[chosen_recipe.recipe]
+                script = Copywriter().create_script(recipe_dataframe)
+                image = retrieve_recipe_photo(str(recipe_dataframe['id']))
+                return RecipeRequestResult(recipe=RecipeResult(
+                    name=recipe_dataframe['name'],
+                    image=image,
+                    rationle=chosen_recipe.rationale,
+                    description=recipe_dataframe['description'],
+                    ingredients=eval(recipe_dataframe['ingredients_raw_str']),
+                    steps=eval(recipe_dataframe['steps']),
+                    servings=str(recipe_dataframe['servings']),
+                    serving_size=recipe_dataframe['serving_size'],
+                    script=script
+                ))
+            else:
+                return RecipeRequestResult(error=ErrorResult(code="NO_RECIPE", description=chosen_recipe.rationale))
         else:
-            pass
-    else:
-        pass
+            return RecipeRequestResult(error=ErrorResult(code="NO_INGREDIENTS"))
+    except BaseException as be:
+        return RecipeRequestResult(error=ErrorResult(code="NO_INGREDIENTS", description=str(be)))
