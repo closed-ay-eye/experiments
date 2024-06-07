@@ -1,4 +1,5 @@
 import asyncio
+
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
 
@@ -18,6 +19,9 @@ from src.recipefinder.indexer import create_cached_embedder, IndexSearch
 from src.recipefinder.rag import RecipePromptComposer, LangChainQuery
 from src.streamlit.state import DisplayState, WaitingInputState, ProcessingState, IllustratedStep
 from src.vision.gemini import Gemini
+from src.speech.google_tts import GoogleTTS
+
+tts = GoogleTTS()
 
 
 @dataclass
@@ -52,7 +56,8 @@ class SystemModel:
     def detect_ingredients(self, tmp_img_path):
         return self.gemini.detect_ingredients(tmp_img_path)
 
-    def search_by_ingredient(self, ingredients: [str], user_prompt="I don't have a preference for the recipe, pick any."):
+    def search_by_ingredient(self, ingredients: [str],
+                             user_prompt="I don't have a preference for the recipe, pick any."):
         print(ingredients)
         search_results = self.index.search(ingredients)
         response = self.query.do_rag_query(search_results, user_prompt)
@@ -114,7 +119,7 @@ class SystemModel:
             self.subject.on_next(
                 ProcessingState(
                     uploaded_image=image,
-                    loading_message="LOAding..."
+                    loading_message="Loading..."
                 )
             )
 
@@ -132,6 +137,7 @@ class SystemModel:
                 response = self.search_by_ingredient(ingredients=content.ingredients, user_prompt=user_prompt)
                 recipe_script = self.generate_script(response.recipe_dataframe)
                 images = self.generate_script_images(recipe_script)
+                audio_ingredients = tts.for_text(recipe_script.ingredients)
                 illustrated_steps = self.build_illustrated_steps(recipe_script, images)
 
                 self.subject.on_next(
@@ -141,7 +147,9 @@ class SystemModel:
                         recipe_ingredients=eval(response.recipe_dataframe['ingredients_raw_str']),
                         recipe_steps=illustrated_steps,
                         recipe_text=response.answer,
-                        recipe_image_url=retrieve_recipe_photo(str(response.recipe_id))
+                        recipe_image_url=retrieve_recipe_photo(str(response.recipe_id)),
+                        audio_ingredients=audio_ingredients,
+                        steps_audio=[tts.for_text(x) for x in recipe_script.steps]
                     )
                 )
 
