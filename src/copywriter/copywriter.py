@@ -3,7 +3,7 @@ from pandas.core.series import Series
 from langchain.output_parsers import PydanticOutputParser
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.pydantic_v1 import BaseModel, Field
+from pydantic import BaseModel, Field
 from langchain_openai import ChatOpenAI
 from typing import List
 
@@ -35,7 +35,7 @@ class Copywriter:
         formatted_recipe = self._format_recipe(recipe)
         user_prompt = (f"You are a famous, charming, and very didactic culinary teacher. Rewrite the ingredients list for the "
                        f"recipe below as if you teaching the recipe to your dear apprentice. Do the same thing for "
-                       f"each step of the recipe. Also for each step create an image description that could be to "
+                       f"each step of the recipe. Also for each step create an image description that could be to used"
                        f"create a photo-realistic illustration of the step using DALL·E 3. If a step is composed of "
                        f"several instructions, choose only the main one to create the image description. Here"
                        f"is the recipe you will teach:\n\n{formatted_recipe}\n\n"
