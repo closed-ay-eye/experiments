@@ -41,12 +41,17 @@ def display_processing(state: ProcessingState):
 def display_answer(state: DisplayState):
     with answer_holder.container():
         st.title(state.recipe_name)
+
         if state.recipe_image_url:
             st.image(state.recipe_image_url)
         elif state.uploaded_image:
             st.image(state.uploaded_image)
-        st.markdown(state.recipe_steps)
-        st.markdown(state.recipe_text)
+
+        for step in state.recipe_steps:
+            st.markdown(
+                f"* {step.recipe_step}\n![{step.recipe_step}]({step.recipe_image_url})"
+            )
+
         if st.button('Restart'):
             model.on_return_to_start()
 
