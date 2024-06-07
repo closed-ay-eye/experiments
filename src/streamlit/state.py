@@ -12,6 +12,8 @@ class ProcessingState:
 @dataclass
 class DisplayState:
     uploaded_image: Image
+    recipe_name: str
+    recipe_steps: [str]
     recipe_text: str = ""
     recipe_image_url: str = ""
 
