@@ -60,7 +60,7 @@ def display_answer(state: DisplayState):
             st.markdown(step.recipe_step)
             if state.steps_audio[i] is not None:
                 st.audio(state.steps_audio[i], format="audio/mp3")
-            st.image(step.recipe_image_url, width=256)
+            st.image(step.recipe_image_url, width=512)
 
         if st.button('Restart'):
             model.on_return_to_start()

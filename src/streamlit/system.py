@@ -80,7 +80,7 @@ class SystemModel:
         return self.copywriter.create_script(recipe_dataframe)
 
     def generate_script_images(self, script: RecipeClassScript):
-        images_url = map_strings_to_bytes(lambda x: DallEAPIWrapper(model="dall-e-3").run(x), script.steps_illustration)
+        images_url = parallel_map(lambda x: DallEAPIWrapper(model="dall-e-3").run(x), script.steps_illustration)
         return images_url
 
     def build_illustrated_steps(self, recipe_script: RecipeClassScript, images_url: list[str]):
@@ -147,7 +147,7 @@ class SystemModel:
                         recipe_text=response.answer,
                         recipe_image_url=retrieve_recipe_photo(str(response.recipe_id)),
                         audio_ingredients=audio_ingredients,
-                        steps_audio=map_strings_to_bytes(lambda x: tts.for_text(x), recipe_script.steps)
+                        steps_audio=parallel_map(lambda x: tts.for_text(x), recipe_script.steps)
                         # steps_audio=[tts.for_text(x) for x in recipe_script.steps]
                     )
                 )
@@ -158,14 +158,14 @@ class SystemModel:
         )
 
 
-def map_strings_to_bytes(f, strings):
-    with ThreadPoolExecutor(max_workers=5) as executor:
+def parallel_map(f, strings):
+    with ThreadPoolExecutor(max_workers=10) as executor:
         # Submit all tasks to the executor
-        futures = [executor.submit(f,s) for s in strings]
+        futures = [executor.submit(f, s) for s in strings]
 
         # Collect results as they complete
         results = []
-        for future in as_completed(futures):
+        for future in futures:
             try:
                 result = future.result()
                 results.append(result)
