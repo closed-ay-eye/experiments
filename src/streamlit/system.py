@@ -20,6 +20,7 @@ from src.recipefinder.rag import RecipePromptComposer, LangChainQuery
 from src.streamlit.state import DisplayState, WaitingInputState, ProcessingState, IllustratedStep
 from src.vision.gemini import Gemini
 from src.speech.google_tts import GoogleTTS
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 tts = GoogleTTS()
 
@@ -79,10 +80,7 @@ class SystemModel:
         return self.copywriter.create_script(recipe_dataframe)
 
     def generate_script_images(self, script: RecipeClassScript):
-        images_url = []
-        for step in script.steps_illustration:
-            images_url.append(DallEAPIWrapper(model="dall-e-3").run(step))
-
+        images_url = map_strings_to_bytes(lambda x: DallEAPIWrapper(model="dall-e-3").run(x), script.steps_illustration)
         return images_url
 
     def build_illustrated_steps(self, recipe_script: RecipeClassScript, images_url: list[str]):
@@ -149,7 +147,8 @@ class SystemModel:
                         recipe_text=response.answer,
                         recipe_image_url=retrieve_recipe_photo(str(response.recipe_id)),
                         audio_ingredients=audio_ingredients,
-                        steps_audio=[tts.for_text(x) for x in recipe_script.steps]
+                        steps_audio=map_strings_to_bytes(lambda x: tts.for_text(x), recipe_script.steps)
+                        # steps_audio=[tts.for_text(x) for x in recipe_script.steps]
                     )
                 )
 
@@ -157,3 +156,20 @@ class SystemModel:
         self.subject.on_next(
             WaitingInputState()
         )
+
+
+def map_strings_to_bytes(f, strings):
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        # Submit all tasks to the executor
+        futures = [executor.submit(f,s) for s in strings]
+
+        # Collect results as they complete
+        results = []
+        for future in as_completed(futures):
+            try:
+                result = future.result()
+                results.append(result)
+            except Exception as exc:
+                print(f"An error occurred: {exc}")
+
+        return results
