@@ -52,6 +52,7 @@ def find_recipe(request: IngredientRequest):
             search_results = index.search(request.ingredients)
             user_prompt = request.prompt if len(request.prompt.strip()) > 0 else "Pick any"
             chosen_recipe = LangChainQuery().do_rag_query(search_results, user_prompt)
+            print(chosen_recipe)
             if chosen_recipe.recipe is not None:
                 recipe_dataframe = df.iloc[chosen_recipe.recipe]
                 script = Copywriter().create_script(recipe_dataframe)
@@ -59,7 +60,7 @@ def find_recipe(request: IngredientRequest):
                 return RecipeRequestResult(recipe=RecipeResult(
                     name=recipe_dataframe['name'],
                     image=image,
-                    rationle=chosen_recipe.rationale,
+                    rationale=chosen_recipe.rationale,
                     description=recipe_dataframe['description'],
                     ingredients=eval(recipe_dataframe['ingredients_raw_str']),
                     steps=eval(recipe_dataframe['steps']),
