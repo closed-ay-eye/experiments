@@ -73,4 +73,4 @@ def find_recipe(request: IngredientRequest):
         else:
             return RecipeRequestResult(error=ErrorResult(code="NO_INGREDIENTS"))
     except BaseException as be:
-        return RecipeRequestResult(error=ErrorResult(code="NO_INGREDIENTS", description=str(be)))
+        return RecipeRequestResult(error=ErrorResult(code="UNKNOWN", description=str(be)))
