@@ -14,5 +14,5 @@ streamlit
 rx
 google-cloud-texttospeech
 requests
-fastapi
+fastapi~=0.111.0
 watchdog

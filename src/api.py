@@ -39,10 +39,10 @@ class RecipeRequestResult(BaseModel):
 
 
 app = FastAPI()
-df = pd.read_csv("dataset/recipes_w_search_terms.csv")
+df = pd.read_csv("files/recipes_w_search_terms_14400.csv")
 cached_embedder = create_cached_embedder()
 ec = EmbeddedCalculator(cached_embedder)
-index = IndexSearch(ec, "indexes/ingredient_index_14400", df)
+index = IndexSearch(ec, "files/ingredient_index_14400", df)
 
 
 @app.post("/recipes/find")
