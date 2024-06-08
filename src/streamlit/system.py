@@ -1,3 +1,8 @@
+import asyncio
+
+loop = asyncio.new_event_loop()
+asyncio.set_event_loop(loop)
+
 from dataclasses import dataclass
 
 import pandas as pd
@@ -14,6 +19,10 @@ from src.recipefinder.indexer import create_cached_embedder, IndexSearch
 from src.recipefinder.rag import RecipePromptComposer, LangChainQuery
 from src.streamlit.state import DisplayState, WaitingInputState, ProcessingState, IllustratedStep
 from src.vision.gemini import Gemini
+from src.speech.google_tts import GoogleTTS
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+tts = GoogleTTS()
 
 
 @dataclass
@@ -48,7 +57,8 @@ class SystemModel:
     def detect_ingredients(self, tmp_img_path):
         return self.gemini.detect_ingredients(tmp_img_path)
 
-    def search_by_ingredient(self, ingredients: [str], user_prompt="I don't have a preference for the recipe, pick any."):
+    def search_by_ingredient(self, ingredients: [str],
+                             user_prompt="I don't have a preference for the recipe, pick any."):
         print(ingredients)
         search_results = self.index.search(ingredients)
         response = self.query.do_rag_query(search_results, user_prompt)
@@ -70,10 +80,7 @@ class SystemModel:
         return self.copywriter.create_script(recipe_dataframe)
 
     def generate_script_images(self, script: RecipeClassScript):
-        images_url = []
-        for step in script.steps_illustration:
-            images_url.append(DallEAPIWrapper(model="dall-e-3").run(step))
-
+        images_url = parallel_map(lambda x: DallEAPIWrapper(model="dall-e-3").run(x), script.steps_illustration)
         return images_url
 
     def build_illustrated_steps(self, recipe_script: RecipeClassScript, images_url: list[str]):
@@ -110,7 +117,7 @@ class SystemModel:
             self.subject.on_next(
                 ProcessingState(
                     uploaded_image=image,
-                    loading_message="LOAding..."
+                    loading_message="Loading..."
                 )
             )
 
@@ -128,15 +135,20 @@ class SystemModel:
                 response = self.search_by_ingredient(ingredients=content.ingredients, user_prompt=user_prompt)
                 recipe_script = self.generate_script(response.recipe_dataframe)
                 images = self.generate_script_images(recipe_script)
+                audio_ingredients = tts.for_text(recipe_script.ingredients)
                 illustrated_steps = self.build_illustrated_steps(recipe_script, images)
 
                 self.subject.on_next(
                     DisplayState(
                         uploaded_image=image,
                         recipe_name=response.recipe_name,
+                        recipe_ingredients=eval(response.recipe_dataframe['ingredients_raw_str']),
                         recipe_steps=illustrated_steps,
                         recipe_text=response.answer,
-                        recipe_image_url=retrieve_recipe_photo(str(response.recipe_id))
+                        recipe_image_url=retrieve_recipe_photo(str(response.recipe_id)),
+                        audio_ingredients=audio_ingredients,
+                        steps_audio=parallel_map(lambda x: tts.for_text(x), recipe_script.steps)
+                        # steps_audio=[tts.for_text(x) for x in recipe_script.steps]
                     )
                 )
 
@@ -144,3 +156,20 @@ class SystemModel:
         self.subject.on_next(
             WaitingInputState()
         )
+
+
+def parallel_map(f, strings):
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        # Submit all tasks to the executor
+        futures = [executor.submit(f, s) for s in strings]
+
+        # Collect results as they complete
+        results = []
+        for future in futures:
+            try:
+                result = future.result()
+                results.append(result)
+            except Exception as exc:
+                print(f"An error occurred: {exc}")
+
+        return results

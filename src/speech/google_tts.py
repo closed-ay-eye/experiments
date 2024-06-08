@@ -1,4 +1,5 @@
 from google.cloud import texttospeech
+import logging
 
 class GoogleTTS:
     """
@@ -12,6 +13,7 @@ class GoogleTTS:
                                                        speaking_rate=1)
 
     def for_text(self, text: str)-> bytes:
+        logging.info(f"Creating TTS for {text}")
         input_text = texttospeech.SynthesisInput(text=text)
         response = self.__client.synthesize_speech(
             request={"input": input_text, "voice": self.__voice, "audio_config": self.__audio_config}
