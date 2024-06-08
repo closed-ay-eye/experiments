@@ -4,11 +4,11 @@ from typing import List, Optional
 from fastapi import FastAPI
 import pandas as pd
 
-from src.copywriter.copywriter import Copywriter, RecipeClassScript
-from src.photo_scrapper import retrieve_recipe_photo
-from src.recipefinder.embedding import EmbeddedCalculator
-from src.recipefinder.indexer import create_cached_embedder, IndexSearch
-from src.recipefinder.rag import LangChainQuery
+from copywriter.copywriter import Copywriter, RecipeClassScript
+from photo_scrapper import retrieve_recipe_photo
+from recipefinder.embedding import EmbeddedCalculator
+from recipefinder.indexer import create_cached_embedder, IndexSearch
+from recipefinder.rag import LangChainQuery
 
 
 class IngredientRequest(BaseModel):
