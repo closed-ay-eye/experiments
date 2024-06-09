@@ -34,6 +34,7 @@ def display_processing(state: ProcessingState):
         st.image(
             state.uploaded_image,
             caption="You just uploaded an image!",
+            width=512,
         )
         st.markdown(state.loading_message)
 
@@ -43,24 +44,29 @@ def display_answer(state: DisplayState):
         st.title(state.recipe_name)
 
         if state.recipe_image_url:
-            st.image(state.recipe_image_url)
+            st.image(state.recipe_image_url, width=512)
         elif state.uploaded_image:
-            st.image(state.uploaded_image)
+            st.image(state.uploaded_image, width=512)
 
-        st.markdown("**Ingredient List:**")
-        st.markdown("\n".join(map(lambda x: f'- {x}', state.recipe_ingredients)))
+        if len(state.recipe_steps) == 0:
+            st.markdown(f"**{state.recipe_text}**")
+        else:
+            st.markdown("**Ingredient List:**")
+            st.markdown("\n".join(map(lambda x: f'- {x}', state.recipe_ingredients)))
 
-        if state.audio_ingredients is not None:
-            st.audio(state.audio_ingredients, format="audio/mp3")
+            if state.audio_ingredients is not None:
+                st.audio(state.audio_ingredients, format="audio/mp3")
 
-        st.markdown("**Steps:**")
+            tab_titles = list(map(lambda x: f"Step {x + 1}", range(len(state.recipe_steps))))
+            tabs = st.tabs(tab_titles)
 
-        for i in range(len(state.recipe_steps)):
-            step = state.recipe_steps[i]
-            st.markdown(step.recipe_step)
-            if state.steps_audio[i] is not None:
-                st.audio(state.steps_audio[i], format="audio/mp3")
-            st.image(step.recipe_image_url, width=512)
+            for i, tab in enumerate(tabs):
+                with tab:
+                    step = state.recipe_steps[i]
+                    st.markdown(step.recipe_step)
+                    if state.steps_audio[i] is not None:
+                        st.audio(state.steps_audio[i], format="audio/mp3")
+                    st.image(step.recipe_image_url, width=512)
 
         if st.button('Restart'):
             model.on_return_to_start()

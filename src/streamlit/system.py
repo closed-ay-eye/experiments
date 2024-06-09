@@ -127,8 +127,9 @@ class SystemModel:
                     DisplayState(
                         uploaded_image=image,
                         recipe_name="",
+                        recipe_ingredients="",
                         recipe_steps=[],
-                        recipe_text="No Ingredients Found!",
+                        recipe_text="No ingredients found in the picture!",
                     )
                 )
             else:
