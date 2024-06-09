@@ -1,16 +1,30 @@
-from google.cloud import texttospeech
 import logging
+import os
+
+from google.cloud import texttospeech
+
 
 class GoogleTTS:
     """
         Text-to-speech using Google Cloud
         Needs GOOGLE_APPLICATION_CREDENTIALS environment variable pointing to service account key json file
+        OR
+        GOOGLE_APPLICATION_CREDENTIALS_CONTENT environment variable containing the json data for the key file
     """
     def __init__(self):
+        self.create_tts_secret_file()
         self.__client = texttospeech.TextToSpeechClient()
         self.__voice = texttospeech.VoiceSelectionParams(language_code="en-US", name="en-US-Journey-F")
         self.__audio_config = texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.LINEAR16,
                                                        speaking_rate=1)
+
+    def create_tts_secret_file(self):
+        if 'GOOGLE_APPLICATION_CREDENTIALS' not in os.environ:
+            tts_secret_content = os.environ['GOOGLE_APPLICATION_CREDENTIALS_CONTENT']
+            text_file = open("GOOGLE_APPLICATION_CREDENTIALS.json", "w")
+            text_file.write(tts_secret_content)
+            text_file.close()
+            os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'GOOGLE_APPLICATION_CREDENTIALS.json'
 
     def for_text(self, text: str)-> bytes:
         logging.info(f"Creating TTS for {text}")

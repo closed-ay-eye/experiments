@@ -3,6 +3,7 @@ faiss-cpu
 pandas~=2.2.2
 langchain
 langchain-openai
+langchain-community
 urllib3==1.26.6
 scikit-learn~=1.5.0
 numpy~=1.26.4
